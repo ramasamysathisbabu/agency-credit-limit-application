@@ -19,22 +19,25 @@ public class CreditIncreaseEligibilityController {
 
 	@Autowired
 	CreditIncreaseEligibilityService creditIncreaseEligibilityService;
-
+	
 	@RequestMapping(value = "transunion/credit/eligibility", method = RequestMethod.POST)
-	public ResponseEntity<CreditLimitEligibilityResponse> getCreditLineEligibilityStatus(@RequestHeader(value=HttpHeaders.AUTHORIZATION) String bearerToken, 
-			@RequestHeader(value="X-Request-ID") String xRequestId, @RequestBody CreditLimitEligibilityRequest creditLimitEligibilityRequest){
-		CreditLimitEligibilityResponse creditLimitEligibilityResponse = null;
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set(HttpHeaders.AUTHORIZATION, bearerToken);
-		responseHeaders.set("X-Request-ID", xRequestId);
+	public ResponseEntity<CreditLimitEligibilityResponse> getCreditLineEligibilityStatus(@RequestHeader HttpHeaders requestHeaders, @RequestBody CreditLimitEligibilityRequest creditLimitEligibilityRequest){
 		
-		if (!"Bearer PNC-Auth-12345".equals(bearerToken)){
+		CreditLimitEligibilityResponse creditLimitEligibilityResponse = null;
+		
+		if(!isCallerAuthorized(requestHeaders)){
 			creditLimitEligibilityResponse = new CreditLimitEligibilityResponse();
 			creditLimitEligibilityResponse.setError("Unauthorized Request. Caller is not authorized.");
-			return new ResponseEntity<CreditLimitEligibilityResponse>(creditLimitEligibilityResponse, responseHeaders, HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<CreditLimitEligibilityResponse>(creditLimitEligibilityResponse, creditIncreaseEligibilityService.generateHttpResponseHeaders(requestHeaders), HttpStatus.UNAUTHORIZED);			
 		}
+		
 		creditLimitEligibilityResponse = creditIncreaseEligibilityService.getCreditLineEligibilityStatus(creditLimitEligibilityRequest.getSsn());
 		
-		return new ResponseEntity<CreditLimitEligibilityResponse>(creditLimitEligibilityResponse, responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<CreditLimitEligibilityResponse>(creditLimitEligibilityResponse, creditIncreaseEligibilityService.generateHttpResponseHeaders(requestHeaders), HttpStatus.OK);
 	}
+	
+	private boolean isCallerAuthorized(HttpHeaders headers){
+			return headers.get(HttpHeaders.AUTHORIZATION).get(0).equals("Bearer PNC-Auth-12345");
+	}
+	
 }

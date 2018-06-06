@@ -1,6 +1,7 @@
 package com.clip.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import com.clip.entities.CreditLimitEligibilityResponse;
@@ -10,6 +11,8 @@ import com.clip.repository.PersonRepository;
 @Service
 public class CreditIncreaseEligibilityService {
 
+	private final String X_REQUEST_ID = "X-Request-ID";
+	
 	@Autowired
 	PersonRepository personRepository;
 
@@ -29,6 +32,13 @@ public class CreditIncreaseEligibilityService {
 		}
 
 		return creditLimitEligibilityResponse;
+	}
+	
+	public HttpHeaders generateHttpResponseHeaders(HttpHeaders requestHeaders) {
+		HttpHeaders responseHeaders = new HttpHeaders();
+		responseHeaders.set(HttpHeaders.AUTHORIZATION, requestHeaders.get(HttpHeaders.AUTHORIZATION).get(0));
+		responseHeaders.set(X_REQUEST_ID, requestHeaders.get(X_REQUEST_ID).get(0));
+		return responseHeaders;
 	}
 
 }
