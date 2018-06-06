@@ -1,8 +1,5 @@
 package com.clip.repository;
 
-import org.springframework.stereotype.Component;
-
-//@Component
 public class Person {
 
 	private String ssn;
