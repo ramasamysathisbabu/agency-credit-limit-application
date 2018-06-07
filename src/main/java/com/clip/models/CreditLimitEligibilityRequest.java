@@ -1,4 +1,4 @@
-package com.clip.entities;
+package com.clip.models;
 
 public class CreditLimitEligibilityRequest {
 	private String ssn;
