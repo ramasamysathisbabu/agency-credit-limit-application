@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -20,25 +21,17 @@ public class CreditIncreaseEligibilityController {
 
 	@Autowired
 	CreditIncreaseEligibilityService creditIncreaseEligibilityService;
-	
+
+	@ExceptionHandler(Exception.class)
 	@PostMapping(value = "/limits/eligibility")
-	public ResponseEntity<CreditLimitEligibilityResponse> getCreditLineEligibilityStatus(@RequestHeader HttpHeaders requestHeaders, @RequestBody CreditLimitEligibilityRequest creditLimitEligibilityRequest){
+	public ResponseEntity<CreditLimitEligibilityResponse> getCreditLineEligibilityStatus(
+			@RequestHeader HttpHeaders requestHeaders, 
+			@RequestBody CreditLimitEligibilityRequest creditLimitEligibilityRequest) throws Exception {
+
+		CreditLimitEligibilityResponse creditLimitEligibilityResponse = creditIncreaseEligibilityService
+				.getCreditLineEligibilityStatus(creditLimitEligibilityRequest.getSsn());
 		
-		CreditLimitEligibilityResponse creditLimitEligibilityResponse = null;
-		
-		if(!isCallerAuthorized(requestHeaders)){
-			creditLimitEligibilityResponse = new CreditLimitEligibilityResponse();
-			creditLimitEligibilityResponse.setError("Unauthorized Request. Caller is not authorized.");
-			return new ResponseEntity<CreditLimitEligibilityResponse>(creditLimitEligibilityResponse, creditIncreaseEligibilityService.generateHttpResponseHeaders(requestHeaders), HttpStatus.UNAUTHORIZED);			
-		}
-		
-		creditLimitEligibilityResponse = creditIncreaseEligibilityService.getCreditLineEligibilityStatus(creditLimitEligibilityRequest.getSsn());
-		
-		return new ResponseEntity<CreditLimitEligibilityResponse>(creditLimitEligibilityResponse, creditIncreaseEligibilityService.generateHttpResponseHeaders(requestHeaders), HttpStatus.OK);
+		return new ResponseEntity<CreditLimitEligibilityResponse>(creditLimitEligibilityResponse,
+				creditIncreaseEligibilityService.generateHttpResponseHeaders(requestHeaders), HttpStatus.OK);
 	}
-	
-	private boolean isCallerAuthorized(HttpHeaders headers){
-			return headers.get(HttpHeaders.AUTHORIZATION).get(0).equals("Bearer PNC-Auth-12345");
-	}
-	
 }
